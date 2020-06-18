@@ -278,7 +278,7 @@ class ipfn(object):
             print('Data input instance not recognized')
             sys.exit(0)
         while ((i <= self.max_itr and conv > self.conv_rate) and (i <= self.max_itr and abs(conv - old_conv) > self.rate_tolerance)
-               and ( self.max_wall_time is not None and td < self.max_wall_time )):
+               and ( (self.max_wall_time is not None) and (td < self.max_wall_time) )):
             old_conv = conv
             if self.verbose>1:
                 print("Iteration %d..." %(i),end="")
@@ -289,7 +289,7 @@ class ipfn(object):
             conv_list.append(conv)
             i += 1
         converged = 1
-        if i <= self.max_itr and ( self.max_wall_time is not None and td < self.max_wall_time):
+        if i <= self.max_itr and ( (self.max_wall_time is not None) and (td < self.max_wall_time)):
             if (not conv > self.conv_rate) & (self.verbose > 1):
                 print('ipfn converged: convergence_rate below threshold')
             elif not abs(conv - old_conv) > self.rate_tolerance:
@@ -297,8 +297,11 @@ class ipfn(object):
         elif ( (self.max_wall_time is not None) and (td >= self.max_wall_time) ):
             print('Maximum time reached')
             converged = 0
-        else:
+        elif (i > self.max_itr):
             print('Maximum iterations reached')
+            converged = 0
+        else:
+            print('Unknown error during iterations wrt/termination conditions')
             converged = 0
 
         # Handle the verbose
