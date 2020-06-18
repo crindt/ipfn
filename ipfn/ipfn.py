@@ -274,7 +274,7 @@ class ipfn(object):
             if verbose>1:
                 print("Iteration %d..." %(i),end="")
             m, conv = ipfn_method(m, self.aggregates, self.dimensions, self.weight_col)
-            if verbose>1:
+            if self.verbose>1:
                 print("%f"%(conv))
             conv_list.append(conv)
             i += 1
