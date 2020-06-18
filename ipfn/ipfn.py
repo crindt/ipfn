@@ -283,7 +283,7 @@ class ipfn(object):
             if self.verbose>1:
                 print("Iteration %d..." %(i),end="")
             m, conv = ipfn_method(m, self.aggregates, self.dimensions, self.weight_col)
-            td = time.time()-td
+            td = time.time()-t0
             if self.verbose>1:
                 print("%f after %1.1f s"%(conv,td))
             conv_list.append(conv)
