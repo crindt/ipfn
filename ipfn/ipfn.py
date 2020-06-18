@@ -5,12 +5,15 @@ import pandas as pd
 import sys
 from itertools import product
 import copy
+import time
 
 
 class ipfn(object):
 
     def __init__(self, original, aggregates, dimensions, weight_col='total',
-                 convergence_rate=1e-5, max_iteration=500, verbose=0, rate_tolerance=1e-8):
+                 convergence_rate=1e-5, max_iteration=500, verbose=0, rate_tolerance=1e-8,
+                 max_wall_time=None
+    ):
         """
         Initialize the ipfn class
 
@@ -33,6 +36,8 @@ class ipfn(object):
 
         rate_tolerance: float value. If above 0.0, like 0.001, the algorithm will stop once the difference between the conv_rate variable of 2 consecutive iterations is below that specified value
 
+        max_wall_time: terminate iterations if the time elapsed exceeds this value
+
         For examples, please open the ipfn script or look for help on functions ipfn_np and ipfn_df
         """
         self.original = original
@@ -43,6 +48,7 @@ class ipfn(object):
         self.max_itr = max_iteration
         self.verbose = verbose
         self.rate_tolerance = rate_tolerance
+        self.max_wall_time = max_wall_time
 
     @staticmethod
     def index_axis_elem(dims, axes, elems):
@@ -259,6 +265,8 @@ class ipfn(object):
         old_conv = -np.inf
         conv_list = []
         m = self.original
+        t0 = time.time()
+        td = 0
 
         # If the original data input is in pandas DataFrame format
         if isinstance(self.original, pd.DataFrame):
@@ -269,21 +277,26 @@ class ipfn(object):
         else:
             print('Data input instance not recognized')
             sys.exit(0)
-        while ((i <= self.max_itr and conv > self.conv_rate) and (i <= self.max_itr and abs(conv - old_conv) > self.rate_tolerance)):
+        while ((i <= self.max_itr and conv > self.conv_rate) and (i <= self.max_itr and abs(conv - old_conv) > self.rate_tolerance)
+               and ( self.max_wall_time is not None and td < self.max_wall_time )):
             old_conv = conv
             if self.verbose>1:
                 print("Iteration %d..." %(i),end="")
             m, conv = ipfn_method(m, self.aggregates, self.dimensions, self.weight_col)
+            td = time.time()-td
             if self.verbose>1:
-                print("%f"%(conv))
+                print("%f after %1.1f s"%(conv,td))
             conv_list.append(conv)
             i += 1
         converged = 1
-        if i <= self.max_itr:
+        if i <= self.max_itr and ( self.max_wall_time is not None and td < self.max_wall_time):
             if (not conv > self.conv_rate) & (self.verbose > 1):
                 print('ipfn converged: convergence_rate below threshold')
             elif not abs(conv - old_conv) > self.rate_tolerance:
                 print('ipfn converged: convergence_rate not updating or below rate_tolerance')
+        elif ( self.max_wall_time is not None and td >= self.max_wall_time):
+            print('Maximum time reached')
+            converged = 0
         else:
             print('Maximum iterations reached')
             converged = 0
