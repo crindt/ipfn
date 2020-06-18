@@ -294,7 +294,7 @@ class ipfn(object):
                 print('ipfn converged: convergence_rate below threshold')
             elif not abs(conv - old_conv) > self.rate_tolerance:
                 print('ipfn converged: convergence_rate not updating or below rate_tolerance')
-        elif ( self.max_wall_time is not None and td >= self.max_wall_time):
+        elif ( (self.max_wall_time is not None) and (td >= self.max_wall_time) ):
             print('Maximum time reached')
             converged = 0
         else:
